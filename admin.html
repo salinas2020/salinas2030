@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Administracao - Meus Videos</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 font-sans">
+    <header class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto">
+            <h1 class="text-2xl font-bold">Painel de Administracao</h1>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4">
+        <section id="login" class="mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Acesso Restrito</h2>
+            <input type="password" id="password" placeholder="Digite a senha" class="w-full p-2 border rounded mb-2">
+            <button onclick="login()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Entrar</button>
+        </section>
+
+        <section id="adminPanel" class="hidden mb-8">
+            <h2 class="text-2xl font-semibold mb-4">Adicionar Novo Video</h2>
+            <input type="text" id="videoUrl" placeholder="Cole o link do video do YouTube aqui" class="w-full p-2 border rounded mb-2">
+            <select id="videoCategory" class="w-full p-2 border rounded mb-2">
+                <option value="1ano">1o Ano</option>
+                <option value="2ano">2o Ano</option>
+                <option value="3ano">3o Ano</option>
+            </select>
+            <button onclick="addVideo()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Adicionar Video</button>
+        </section>
+    </main>
+
+    <footer class="bg-blue-600 text-white p-4 text-center">
+        <p>© 2025 Meus Videos do YouTube. Todos os direitos reservados.</p>
+    </footer>
+
+    <script>
+        const ADMIN_PASSWORD = "admin123"; // Senha fixa (mude para algo seguro)
+
+        function login() {
+            const password = document.getElementById('password').value;
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('login').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+
+        function addVideo() {
+            const videoUrl = document.getElementById('videoUrl').value;
+            const videoCategory = document.getElementById('videoCategory').value;
+            const videoId = extractVideoId(videoUrl);
+            
+            if (videoId) {
+                // Carrega os vídeos existentes do localStorage
+                let videos = JSON.parse(localStorage.getItem('videos')) || { '1ano': [], '2ano': [], '3ano': [] };
+                
+                // Adiciona o novo vídeo à categoria correspondente
+                videos[videoCategory].unshift(videoId); // Adiciona no início
+                
+                // Salva de volta no localStorage
+                localStorage.setItem('videos', JSON.stringify(videos));
+                
+                // Limpa o campo
+                document.getElementById('videoUrl').value = '';
+                alert('Video adicionado com sucesso!');
+            } else {
+                alert('Por favor, insira um link valido do YouTube.');
+            }
+        }
+
+        function extractVideoId(url) {
+            const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+    </script>
+</body>
+</html>
