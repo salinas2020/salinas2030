@@ -29,11 +29,16 @@
                 <option value="3ano">3o Ano</option>
             </select>
             <button onclick="addVideo()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Adicionar Video</button>
+
+            <h2 class="text-2xl font-semibold mt-8 mb-4">Gerenciar Videos</h2>
+            <button onclick="exportVideos()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 mr-2">Exportar Videos</button>
+            <input type="file" id="importFile" accept=".json" class="p-2 border rounded mb-2">
+            <button onclick="importVideos()" class="bg-yellow-600 text-white px-4 py-2 rounded hover:bg-yellow-700">Importar Videos</button>
         </section>
     </main>
 
     <footer class="bg-blue-600 text-white p-4 text-center">
-        <p>© 2025 Meus Videos do YouTube. Todos os direitos reservados.</p>
+        <p>Â© 2025 Meus Videos do YouTube. Todos os direitos reservados.</p>
     </footer>
 
     <script>
@@ -55,21 +60,53 @@
             const videoId = extractVideoId(videoUrl);
             
             if (videoId) {
-                // Carrega os vídeos existentes do localStorage
                 let videos = JSON.parse(localStorage.getItem('videos')) || { '1ano': [], '2ano': [], '3ano': [] };
-                
-                // Adiciona o novo vídeo à categoria correspondente
-                videos[videoCategory].unshift(videoId); // Adiciona no início
-                
-                // Salva de volta no localStorage
+                videos[videoCategory].unshift(videoId);
                 localStorage.setItem('videos', JSON.stringify(videos));
-                
-                // Limpa o campo
                 document.getElementById('videoUrl').value = '';
                 alert('Video adicionado com sucesso!');
             } else {
                 alert('Por favor, insira um link valido do YouTube.');
             }
+        }
+
+        function exportVideos() {
+            const videos = JSON.parse(localStorage.getItem('videos')) || { '1ano': [], '2ano': [], '3ano': [] };
+            const dataStr = JSON.stringify(videos, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'youtube_videos.json';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function importVideos() {
+            const fileInput = document.getElementById('importFile');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Por favor, selecione um arquivo JSON.');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const videos = JSON.parse(e.target.result);
+                    if (videos['1ano'] && videos['2ano'] && videos['3ano']) {
+                        localStorage.setItem('videos', JSON.stringify(videos));
+                        alert('Videos importados com sucesso! Atualize a pagina publica para ver os videos.');
+                    } else {
+                        alert('Arquivo JSON invalido. Certifique-se de que contem as categorias 1ano, 2ano e 3ano.');
+                    }
+                } catch (error) {
+                    alert('Erro ao importar o arquivo. Verifique se e um JSON valido.');
+                }
+            };
+            reader.readAsText(file);
         }
 
         function extractVideoId(url) {
